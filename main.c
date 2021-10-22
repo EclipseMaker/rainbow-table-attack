@@ -8,12 +8,12 @@
 
 int main (int argc, char* argv[])
 {
-    printf("%"PRIu64 "\n", target_hash_function("arvind"));
+//    printf("%"PRIu64 "\n", target_hash_function("arvind"));
    // int tab[6] = {0, 4, 8, 9, 6};
-   change_base_function(2456);
-
+   reduction_function(486486545,1);
  //   printf("apres appel ");
 }
+
 
 
 

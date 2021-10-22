@@ -32,15 +32,8 @@ pwhash target_hash_function(char *pwd){
                     return myhash;
 }
 
-char* reduction_function(uint64_t hash,int columnNumber){
-        int modulo_hash = (hash%(NB_PASS_MAX)) + columnNumber;
- //       change_base_function(modulo_hash);
 
-}
-
-
-int* init_tableau(int* tab){
-    tab =(int*) malloc(sizeof(int)*M);
+void init_tableau(char* tab){
     if(tab == NULL){
         printf("probleme malloc\n");
         exit(-1);
@@ -49,31 +42,43 @@ int* init_tableau(int* tab){
         tab[i] = 0;
      }
 
-    return tab;
 
 
 }
 
 
-void change_base_function(int number){
+void change_base_function(int number , char *tab){
 
     int quotient = 0;
-    int *tab;
     int remainder = 0;
     int i= M - 1;
 
 
-    tab = init_tableau(tab);
     while((number/BASE) != 0)
     {
         tab[i] = (number%BASE);
         number = number/BASE;
         i--;
     }
+
      tab[i] = (number%BASE) ;
      for(int i=0; i<M; i++){
             tab[i]+='a';
-            printf("tableau %c\n",tab[i]);
+           // printf("tableau %c\n",tab[i]);
     }
-     //return tab;
 }
+
+
+
+void reduction_function(uint64_t hash,int columnNumber){
+
+        int modulo_hash = (hash%(NB_PASS_MAX)) + columnNumber;
+        char *tab= malloc(sizeof(char)*M);
+        init_tableau(tab);
+        change_base_function(modulo_hash,tab);
+        printf("Mon mots de passe est : %s\n",tab);
+
+}
+
+
+
