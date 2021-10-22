@@ -66,17 +66,14 @@ void change_base_function(int number){
     tab = init_tableau(tab);
     while((number/BASE) != 0)
     {
-        tab[i] = (char)( number%BASE );
+        tab[i] = (number%BASE);
         number = number/BASE;
         i--;
     }
-     tab[i] =(char) (number%BASE);
+     tab[i] = (number%BASE) ;
      for(int i=0; i<M; i++){
+            tab[i]+='a';
             printf("tableau %c\n",tab[i]);
     }
      //return tab;
 }
-
-
-
-
