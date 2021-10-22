@@ -8,19 +8,75 @@
 
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3 // In bits
-
 typedef uint64_t pwhash;
+#define M 6
+#define NB_PASS_MAX 308915776
+#define R 10
+#define N 100000
+#define L 1000
+#define BASE 26
+#define HASHSIZE 8 // In bytes
+#define SHIFT 3 // In bits
+#define MAX_BUFFER 26
 
 pwhash target_hash_function(char *pwd){
-  unsigned char md5[MD5_DIGEST_LENGTH] = {0};
-  MD5((const unsigned char *)pwd, strlen(pwd), md5);
-  char hexamd5hash[2*HASHSIZE+1];
-  hexamd5hash[2*HASHSIZE]='\0';
-  for (int i=0; i < HASHSIZE; i++) {
-    sprintf(hexamd5hash + 2*i, "%02x", md5[i]);
-  }
-  pwhash md5hash = strtoull(hexamd5hash, NULL, 16);
-  pwhash myhash = (md5hash << SHIFT)|(md5hash >> (8*HASHSIZE - SHIFT));
-  return myhash;
+      unsigned char md5[MD5_DIGEST_LENGTH] = {0};
+        MD5((const unsigned char *)pwd, strlen(pwd), md5);
+          char hexamd5hash[2*HASHSIZE+1];
+            hexamd5hash[2*HASHSIZE]='\0';
+              for (int i=0; i < HASHSIZE; i++) {
+                      sprintf(hexamd5hash + 2*i, "%02x", md5[i]);
+                        }
+                pwhash md5hash = strtoull(hexamd5hash, NULL, 16);
+                  pwhash myhash = (md5hash << SHIFT)|(md5hash >> (8*HASHSIZE - SHIFT));
+                    return myhash;
 }
+
+char* reduction_function(uint64_t hash,int columnNumber){
+        int modulo_hash = (hash%(NB_PASS_MAX)) + columnNumber;
+ //       change_base_function(modulo_hash);
+
+}
+
+
+int* init_tableau(int* tab){
+    tab =(int*) malloc(sizeof(int)*M);
+    if(tab == NULL){
+        printf("probleme malloc\n");
+        exit(-1);
+    }
+    for(int i=0; i<M; i++){
+        tab[i] = 0;
+     }
+
+    return tab;
+
+
+}
+
+
+void change_base_function(int number){
+
+    int quotient = 0;
+    int *tab;
+    int remainder = 0;
+    int i= M - 1;
+
+
+    tab = init_tableau(tab);
+    while((number/BASE) != 0)
+    {
+        tab[i] = (char)( number%BASE );
+        number = number/BASE;
+        i--;
+    }
+     tab[i] =(char) (number%BASE);
+     for(int i=0; i<M; i++){
+            printf("tableau %c\n",tab[i]);
+    }
+     //return tab;
+}
+
+
+
 
