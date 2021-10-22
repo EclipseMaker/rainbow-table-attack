@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
+#include <time.h>
+
 
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3 // In bits
@@ -79,6 +81,19 @@ void reduction_function(uint64_t hash,int columnNumber){
         printf("Mon mots de passe est : %s\n",tab);
 
 }
+
+
+void generate_pwd(char *pwd){
+  
+   // seed
+   srand( time (NULL));
+   for (int i=0;i<L;i++){
+      pwd[i]=rand()%26 + 'a';
+   }
+}
+
+
+
 
 
 
