@@ -9,4 +9,5 @@
 int main (int argc, char* argv[])
 {
     printf("%"PRIu64 "\n", target_hash_function("arvind"));
+    printf("");
 }
