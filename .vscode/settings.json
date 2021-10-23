@@ -3,5 +3,5 @@
         "stdlib.h": "c",
         "math.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Enabled"
 }
