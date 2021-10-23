@@ -152,6 +152,4 @@ int main(int argc, char* argv[])
         if(!set_rainbow(file, refFile))
             return -1;
     }
-
-    return 0;
 }
