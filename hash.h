@@ -72,17 +72,12 @@ void reduction_function(uint64_t hash, int columnNumber, char *tab)
 {
 
   int modulo_hash = (hash % (NB_PASS_MAX)) + columnNumber;
-  // char *tab= malloc(sizeof(char)*M);
-  //init_tableau(tab);
   change_base_function(modulo_hash, tab);
-  // printf("Mon mots de passe est : %s\n",tab);
 }
 
 void generate_pwd(char *pwd)
 {
-
   // seed
-  srand(time(NULL));
   for (int i = 0; i < M; i++)
   {
     pwd[i] = rand() % 26 + 'a';
@@ -94,7 +89,6 @@ void generate_chain(char *pwd)
   uint64_t hash;
   for (int i = 0; i < L; i++)
   {
-    printf("tema le mdp : %s ", pwd);
     hash = target_hash_function(pwd);
     reduction_function(hash, i, pwd);
   }
@@ -102,6 +96,8 @@ void generate_chain(char *pwd)
 
 void generate_table(void){
     char *pwd;
+
+    srand(time(NULL));
     pwd=(char*)malloc(sizeof(pwd)*M);
     if(pwd == NULL){
         printf("probleme de malloc\n");
