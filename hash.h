@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <openssl/md5.h>
 #include <string.h>
@@ -64,9 +63,9 @@ void change_base_function(int number, char *tab)
   }
 
   tab[i] = (number % BASE);
-  for (int i = 0; i < M; i++)
+  for (int j = 0; j < M; j++)
   {
-    tab[i] += 'a';
+    tab[j] += 'a';
     // printf("tableau %c\n",tab[i]);
   }
 }
@@ -76,7 +75,7 @@ void reduction_function(uint64_t hash, int columnNumber, char *tab)
 
   int modulo_hash = (hash % (NB_PASS_MAX)) + columnNumber;
   // char *tab= malloc(sizeof(char)*M);
-  //init_tableau(tab);
+  init_tableau(tab);
   change_base_function(modulo_hash, tab);
   // printf("Mon mots de passe est : %s\n",tab);
 }
@@ -85,8 +84,6 @@ void reduction_function(uint64_t hash, int columnNumber, char *tab)
 void generate_pwd(char *pwd)
 {
 
-  // seed
-  srand(time(NULL));
   for (int i = 0; i < M; i++)
   {
     pwd[i] = rand() % 26 + 'a';
@@ -95,15 +92,20 @@ void generate_pwd(char *pwd)
 
 void get_couples(char* word, char* x0, char* xL)
 {
-    if (word == NULL)
+    if (word == NULL){
+        word=(char*)malloc(sizeof(char)*M);
         generate_pwd(word);
-    x0 = word;
+}
+    x0[M]='\0';
+    strcpy(x0,word);
     for(int cpt = 1; cpt <= L; cpt++)
     {
         reduction_function(target_hash_function(word), cpt-1, word);
     }
-    xL = word;
-}
+    xL[M]='\0';
+    strcpy(xL,word);
+//    free(word);    ne pas oublier de free
+ }
  void generate_chain(char *pwd){
    uint64_t hash;
    for (int i = 0; i < L; i++)
@@ -116,20 +118,20 @@ void get_couples(char* word, char* x0, char* xL)
 
 
 void generate_table(void){
-    char *pwd;
+    char *pwd=(char*)malloc(sizeof(char)*M);
 
     srand(time(NULL));
-    pwd=(char*)malloc(sizeof(pwd)*M);
     if(pwd == NULL){
         printf("probleme de malloc\n");
         exit(0);
     }
     for(int i=0; i<N ; i++){
         generate_pwd(pwd);
-        printf(" pwd  %d,0 : %s", i, pwd);
+        // passeword exist ? chkeck it with function verify : True->existe  False:doesn't exist
+        printf(" PWD(%d,0 : %s)  ||  ", i, pwd);
         generate_chain(pwd);
-
-        printf("pwd%d,L => %s\n", i, pwd);
+        // passeword exist ? chkeck it with function verify : True->existe  False:doesn't exist
+        printf("PWD (%d,L => %s)\n", i, pwd);
 
     }
 
@@ -138,27 +140,34 @@ void generate_table(void){
 
 int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if file empty ?
 {
-    char couples[2][M];
+    char couples[2][M+1];
     char initialWord[M];
     for (int nbChains = 1; nbChains <= N; nbChains++)
     {
         if (refFile == NULL)
-            get_couples(NULL, couples[0], couples[1]);
+   {
+
+            get_couples(NULL,couples[0], couples[1]);
+ }
         else
         {
             if (fgets(initialWord, M, refFile) == 0)
             {
+
                 printf("Not enough word given in file\n");
                 return 0;
             }
 
             get_couples(initialWord, couples[0], couples[1]);
+
         }
-        fprintf(f, "%s %s%s", couples[0], couples[1], "\n");
+        fprintf(f, "%s %s\n", couples[0], couples[1]);
     }
 
-    free(couples);
-    if(fclose(f))
+
+    //free(couples)    renvoie une erreur , faut faire une fonction qui free un tableau case par case
+
+    if(fclose(f)==EOF)
     {
         printf("Couldn't close the file\n");
         return 0;
@@ -166,3 +175,7 @@ int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if fil
 
     return 1;
 }
+
+
+
+
