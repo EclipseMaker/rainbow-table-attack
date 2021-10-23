@@ -24,7 +24,31 @@ void test_generation_chain(void){
       printf("%s\n", tab); */
    //   printf("apres appel ");
 
-}
+
+
+/*int main(int argc, char* argv[])
+{
+    if (argc < R+1)
+    {
+        printf("You gave %i files to write. Give at least %i files in argument\n", argc-1, R);
+        return -1;
+    }
+
+    FILE* file = NULL; FILE* refFile = NULL;
+    if (argc == R + 2)
+        refFile = fopen(argv[R+1], "r");
+
+    for (int nthFile=1; nthFile<=R; nthFile++)
+    {
+        file = fopen(argv[nthFile], "w");
+
+        if(!set_rainbow(file, refFile))
+            return -1;
+    }
+
+    return 0;
+}*/
+
 
 int main (int argc, char* argv[])
 {
