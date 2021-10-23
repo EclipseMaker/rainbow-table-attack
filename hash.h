@@ -12,7 +12,7 @@ typedef uint64_t pwhash;
 #define NB_PASS_MAX 308915776
 #define R 10
 #define N 100000
-#define L 1
+#define L 10
 #define BASE 26
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3    // In bits
@@ -98,4 +98,22 @@ void generate_chain(char *pwd)
     hash = target_hash_function(pwd);
     reduction_function(hash, i, pwd);
   }
+}
+
+void generate_table(void){
+    char *pwd;
+    pwd=(char*)malloc(sizeof(pwd)*M);
+    if(pwd == NULL){
+        printf("probleme de malloc\n");
+        exit(0);
+    }
+    for(int i=0; i<N ; i++){
+        generate_pwd(pwd);
+        printf(" pwd  %d,0 : %s", i, pwd);
+        generate_chain(pwd);
+
+        printf("pwd%d,L => %s\n", i, pwd);
+
+    }
+
 }
