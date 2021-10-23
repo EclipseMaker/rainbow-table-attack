@@ -32,12 +32,20 @@ int main(int argc, char* argv[])
         return -1;
     }
     FILE* file = NULL; FILE* refFile = NULL;
-    if (argc == R + 2)
+    if (argc == R + 2){
         refFile = fopen(argv[R+1], "r");
-
+        if (refFile==NULL){
+        fprintf(stderr,"cannot open file %s\n",argv[R+1]);
+        return -1;
+   }
+}
+   if (argc > R + 2){
+          printf("You gave %i files to write. you can give  maximum %i files in argument\n", argc-1, R);
+          return -1;
+}
     for (int nthFile=1; nthFile<=R; nthFile++)
     {
-        file = fopen(argv[nthFile], "w");
+        file = fopen(argv[nthFile],"w");
         if(!set_rainbow(file, refFile))
             return -1;
     }
@@ -52,5 +60,6 @@ int main(int argc, char* argv[])
         //test_generation_chain();
 }
 */
+
 
 

@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <openssl/md5.h>
 #include <string.h>
@@ -12,8 +13,8 @@
 typedef uint64_t pwhash;
 #define M 6
 #define NB_PASS_MAX 308915776
-#define R 10
-#define N 100000
+#define R 2
+#define N 2
 #define L 10
 #define BASE 26
 #define HASHSIZE 8 // In bytes
@@ -141,7 +142,7 @@ void generate_table(void){
 int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if file empty ?
 {
     char couples[2][M+1];
-    char initialWord[M];
+    char initialWord[M+1]; // on rajoute une case pour stocker de fin de chaine '\0' psk on en a besoins dans le fgets
     for (int nbChains = 1; nbChains <= N; nbChains++)
     {
         if (refFile == NULL)
@@ -151,14 +152,17 @@ int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if fil
  }
         else
         {
-            if (fgets(initialWord, M, refFile) == 0)
+            if (fgets(initialWord, M + 1, refFile) == NULL)
             {
-
                 printf("Not enough word given in file\n");
-                return 0;
+                exit (0);
             }
-
-            get_couples(initialWord, couples[0], couples[1]);
+            if (fgetc(refFile)!='\n'){
+              fprintf(stderr,"word length error\n");
+              exit(0);
+ }
+            if (!feof(f))
+                 get_couples(initialWord, couples[0], couples[1]);
 
         }
         fprintf(f, "%s %s\n", couples[0], couples[1]);
@@ -175,7 +179,5 @@ int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if fil
 
     return 1;
 }
-
-
 
 
