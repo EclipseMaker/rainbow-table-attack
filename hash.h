@@ -1,10 +1,13 @@
+
 #include <stdlib.h>
 #include <openssl/md5.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <time.h>
+
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3    // In bits
 typedef uint64_t pwhash;
@@ -101,8 +104,39 @@ void get_couples(char* word, char* x0, char* xL)
     }
     xL = word;
 }
+ void generate_chain(char *pwd){
+   uint64_t hash;
+   for (int i = 0; i < L; i++)
+   {
+     hash = target_hash_function(pwd);
+     reduction_function(hash, i, pwd);
+   }
+ }
 
-int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if file empty ? 
+
+
+void generate_table(void){
+    char *pwd;
+
+    srand(time(NULL));
+    pwd=(char*)malloc(sizeof(pwd)*M);
+    if(pwd == NULL){
+        printf("probleme de malloc\n");
+        exit(0);
+    }
+    for(int i=0; i<N ; i++){
+        generate_pwd(pwd);
+        printf(" pwd  %d,0 : %s", i, pwd);
+        generate_chain(pwd);
+
+        printf("pwd%d,L => %s\n", i, pwd);
+
+    }
+
+}
+
+
+int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if file empty ?
 {
     char couples[2][M];
     char initialWord[M];
@@ -125,33 +159,10 @@ int set_rainbow(FILE* f, FILE* refFile) //is given needed ?? Or determine if fil
 
     free(couples);
     if(fclose(f))
-    {   
+    {
         printf("Couldn't close the file\n");
         return 0;
-    } 
+    }
 
     return 1;
-}
-
-int main(int argc, char* argv[])
-{
-    if (argc < R+1)
-    {
-        printf("You gave %i files to write. Give at least %i files in argument\n", argc-1, R);
-        return -1;
-    }
-
-    FILE* file = NULL; FILE* refFile = NULL; 
-    if (argc == R + 2)
-        refFile = fopen(argv[R+1], "r");
-
-    for (int nthFile=1; nthFile<=R; nthFile++)
-    {
-        file = fopen(argv[nthFile], "w");
-
-        if(!set_rainbow(file, refFile))
-            return -1;
-    }
-
-    return 0;
 }
