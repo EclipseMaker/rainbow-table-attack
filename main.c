@@ -2,27 +2,6 @@
 #include <stdlib.h>
 #include "hash.h"
 
-void test_generation_chain(void){
-
-     char* tab=malloc(sizeof(char)*6);
-     init_tableau(tab);
-     tab[0]='w';
-     tab[1]='y';
-     tab[2]='u';
-     tab[3]='u';
-     tab[4]='r';
-     tab[5]='o';
-
-     generate_chain(tab) ;
-     printf("%s\n", tab);
-
-      printf("wyuuro ");
-      uint64_t  hash;
-      hash=target_hash_function("wyuuro ");
-       reduction_function(hash,0,tab);
-      printf("%s\n", tab);
-
-}
 
 int main(int argc, char* argv[])
 {
@@ -40,26 +19,37 @@ int main(int argc, char* argv[])
    }
 }
    if (argc > R + 2){
-          printf("You gave %i files to write. you can give  maximum %i files in argument\n", argc-1, R);
+          printf("You gave %i files to write. you can give  maximum %i files in argument\n", argc-1, R+1);
           return -1;
 }
+
+    //On va creer deux tableaux, Tab1 qui contient tout les PWD (x,0)  et Tab2 qui contient les PWD (x,L) déjà obtenu lors
+    //de la construction de nos R tables.
+
+    liste_t *tab1[M_H];
+   // liste_t *tab2[M_H];
+    int collision = 0;
+   for (int i=0;i<M_H;i++){
+       liste_t *l;
+       l=(liste_t *) malloc(sizeof(liste_t));
+       initialisation(l);
+       tab1[i]=l;
+  }
+
+
+    srand(time(NULL));
     for (int nthFile=1; nthFile<=R; nthFile++)
     {
         file = fopen(argv[nthFile],"w");
-        if(!set_rainbow(file, refFile))
-            return -1;
+        if(!set_rainbow(file, refFile, tab1, &collision))
+           { return -1;}
+        printf("succes table %d\n",nthFile);
+
+
     }
-
-
+    printf("Generation table has suceeded with %d collisions\n",collision);
+    free_table(tab1);
     return 0;
 }
-
-/*int main (int argc, char* argv[])
-{
-        generate_table();
-        //test_generation_chain();
-}
-*/
-
 
 
