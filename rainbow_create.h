@@ -106,12 +106,14 @@ void free_liste(liste_t *Liste) {
   }
 }
 
-void free_table(liste_t **Liste) {
+void free_table(liste_t **Liste) 
+{
   for (int i = 0; i < M_H; i++)
     free_liste(Liste[i]);
 }
 
-bool detecter(liste_t *Liste, char *mot) {
+bool detecter(liste_t *Liste, char *mot) 
+{
   cellule_t *cel = Liste->tete;
   while (cel != NULL) 
   {
@@ -122,7 +124,8 @@ bool detecter(liste_t *Liste, char *mot) {
   return false;
 }
 
-void init_tableau(char *tab) {
+void init_tableau(char *tab) 
+{
   if (tab == NULL) {
     printf("probleme malloc\n");
     exit(-1);
@@ -131,13 +134,15 @@ void init_tableau(char *tab) {
     tab[i] = 0;
 }
 
-void change_base_function(int number, char *tab) {
+void change_base_function(int number, char *tab) 
+{
 
   int quotient = 0;
   int remainder = 0;
   int i = M - 1;
 
-  while ((number / BASE) != 0) {
+  while ((number / BASE) != 0) 
+  {
     tab[i] = (number % BASE);
     number = number / BASE;
     i--;
@@ -148,20 +153,21 @@ void change_base_function(int number, char *tab) {
     tab[j] += 'a';
 }
 
-void reduction_function(uint64_t hash, int columnNumber, char *tab) {
-
+void reduction_function(uint64_t hash, int columnNumber, char *tab) 
+{
   int modulo_hash = (hash % (NB_PASS_MAX)) + columnNumber;
   init_tableau(tab);
   change_base_function(modulo_hash, tab);
 }
 
-void generate_pwd(char *pwd) {
+void generate_pwd(char *pwd) 
+{
   for (int i = 0; i < M; i++)
     pwd[i] = rand() % 26 + 'a';
 }
 
-bool insert_data(char *info, liste_t **l, int *collision) {
-
+bool insert_data(char *info, liste_t **l, int *collision) 
+{
     int nbr = transf(info) % M_H;
     if (nbr < 0) 
         nbr = nbr + M_H;
@@ -175,7 +181,8 @@ bool insert_data(char *info, liste_t **l, int *collision) {
     return true;
 }
 
-void get_couples(char *word, char *x0, char *xL, int *collision, liste_t **tab1) {
+void get_couples(char *word, char *x0, char *xL, int *collision, liste_t **tab1) 
+{
   if (word == NULL) 
   {
     word = (char *)malloc(sizeof(char) * M);
@@ -211,12 +218,8 @@ void generate_table(void) {
   }
   for (int i = 0; i < N; i++) {
     generate_pwd(pwd);
-    // passeword exist ? chkeck it with function verify : True->existe
-    // False:doesn't exist
     printf(" PWD(%d,0 : %s)  ||  ", i, pwd);
     generate_chain(pwd);
-    // passeword exist ? chkeck it with function verify : True->existe
-    // False:doesn't exist
     printf("PWD (%d,L => %s)\n", i, pwd);
   }
 }
@@ -224,17 +227,18 @@ void generate_table(void) {
 int set_rainbow(FILE *f, FILE *refFile, liste_t **tab1, int *collision)
 {
   char couples[2][M + 1];
-  char initialWord[M + 1]; // on rajoute une case pour stocker de fin de chaine
-                           // '\0' psk on en a besoins dans le fgets
+  char initialWord[M + 1];
   liste_t *tab2[M_H];
-  for (int i = 0; i < M_H; i++) {
+  for (int i = 0; i < M_H; i++) 
+  {
     liste_t *l;
     l = (liste_t *)malloc(sizeof(liste_t));
     initialisation(l);
     tab2[i] = l;
   }
 
-  for (int nbChains = 1; nbChains <= N; nbChains++) {
+  for (int nbChains = 1; nbChains <= N; nbChains++) 
+  {
     if (refFile == NULL) {
       get_couples(NULL, couples[0], couples[1], collision, tab1);
       while (!insert_data(couples[1], tab2, collision))
@@ -250,7 +254,7 @@ int set_rainbow(FILE *f, FILE *refFile, liste_t **tab1, int *collision)
       if (fgetc(refFile) != '\n') 
       {
         fprintf(stderr, "word length error\n");
-        return 0
+        return 0;
       }
       if (!feof(f)) 
       {
