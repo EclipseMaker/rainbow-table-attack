@@ -1,55 +1,62 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hash.h"
+#include "time.h"
 
+
+void creer_jeu_donnes(void){
+
+  srand(time(NULL));
+  char* tab=malloc(sizeof(char)*6);
+  for(int i=0; i< 2; i++){
+        generate_pwd(tab);
+        generate_chain_with_file(tab);
+
+  }
+
+}
 
 int main(int argc, char* argv[])
 {
-    if (argc < R+1)
-    {
-        printf("You gave %i files to write. Give at least %i files in argument\n", argc-1, R);
-        return -1;
-    }
-    FILE* file = NULL; FILE* refFile = NULL;
-    if (argc == R + 2){
-        refFile = fopen(argv[R+1], "r");
-        if (refFile==NULL){
-        fprintf(stderr,"cannot open file %s\n",argv[R+1]);
-        return -1;
-   }
-}
-   if (argc > R + 2){
-          printf("You gave %i files to write. you can give  maximum %i files in argument\n", argc-1, R+1);
-          return -1;
-}
 
-    //On va creer deux tableaux, Tab1 qui contient tout les PWD (x,0)  et Tab2 qui contient les PWD (x,L) déjà obtenu lors
-    //de la construction de nos R tables.
+  creer_jeu_donnes();
+  char** fileNames;
+  FILE* fileToCrack;
+  FILE* pwdFound;
+  char* ligne;
+  char* passXL;
+  char *hashToCrack;
+  hashToCrack = (char*)malloc(sizeof(char) * 21);
 
-    liste_t *tab1[M_H];
-   // liste_t *tab2[M_H];
-    int collision = 0;
-   for (int i=0;i<M_H;i++){
-       liste_t *l;
-       l=(liste_t *) malloc(sizeof(liste_t));
-       initialisation(l);
-       tab1[i]=l;
+
+  if (argc!= R+3){ ///R le nombre de fichier generer par la fonction create tables
+       fprintf(stderr,"wrong number of file\n");
+       return -1;
   }
 
+  fileToCrack = fopen(argv[R+1], "r");
+  pwdFound = fopen("pwdFound.txt", "w");
 
-    srand(time(NULL));
-    for (int nthFile=1; nthFile<=R; nthFile++)
-    {
-        file = fopen(argv[nthFile],"w");
-        if(!set_rainbow(file, refFile, tab1, &collision))
-           { return -1;}
-        printf("succes table %d\n",nthFile);
+  if(fileToCrack == NULL || pwdFound == NULL){
+      printf("probleme douverture de fichier\n");
+      exit(-1);
+  }
 
+  fileNames =(char**) malloc(sizeof(char*)*R);
+  if(fileNames == NULL){
+    printf("prob de malloc");
+  }
 
-    }
-    printf("Generation table has suceeded with %d collisions\n",collision);
-    free_table(tab1);
-    return 0;
+   for(int i=1; i < argc - 2 ; i++){
+     fileNames[i-1]=strdup(argv[i]);
+  }
+
+   rainbow_attack(fileNames, fileToCrack, pwdFound);
+  // for (int i = 0; i < R; i++){
+  //   printf("%s\n", fileNames[i]);
+  // }
+
+/*   for(int i=1; i < (argc-2); i++){
+     fclose(fileNames[i-1]);
+  }*/
 }
-
-

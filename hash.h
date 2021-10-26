@@ -1,17 +1,16 @@
 
-#include <assert.h>
-#include <math.h>
-#include <openssl/md5.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <time.h>
-#include <unistd.h>
+#include <openssl/md5.h>
+#include <time.h>
+
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3    // In bits
-typedef uint64_t pwhash;
 #define M 6
 #define NB_PASS_MAX 308915776
 #define R 10
@@ -21,14 +20,18 @@ typedef uint64_t pwhash;
 #define HASHSIZE 8 // In bytes
 #define SHIFT 3    // In bits
 #define MAX_BUFFER 26
-#define M_H 500000
 
-pwhash target_hash_function(char *pwd) {
+typedef uint64_t pwhash;
+
+
+pwhash target_hash_function(char *pwd)
+{
   unsigned char md5[MD5_DIGEST_LENGTH] = {0};
   MD5((const unsigned char *)pwd, strlen(pwd), md5);
   char hexamd5hash[2 * HASHSIZE + 1];
   hexamd5hash[2 * HASHSIZE] = '\0';
-  for (int i = 0; i < HASHSIZE; i++) {
+  for (int i = 0; i < HASHSIZE; i++)
+  {
     sprintf(hexamd5hash + 2 * i, "%02x", md5[i]);
   }
   pwhash md5hash = strtoull(hexamd5hash, NULL, 16);
@@ -36,263 +39,238 @@ pwhash target_hash_function(char *pwd) {
   return myhash;
 }
 
-struct cellule {
-  char *nom;
-  struct cellule *suivant;
-};
 
-typedef struct cellule cellule_t;
-
-struct liste {
-  cellule_t *tete;
-};
-
-typedef struct liste liste_t;
-
-void initialisation(liste_t *Liste) { Liste->tete = NULL; }
-
-int puissance(int x, int y) {
-  // Déclaration des variables
-  int compteur, resultat;
-
-  compteur = 0;
-  resultat = 1;
-
-  while (compteur < y) {
-    resultat = resultat * x;
-    compteur++;
-  }
-
-  return resultat;
-}
-
-int transf(char *chaine) {
-  int lettre, nombre;
-  nombre = 0;
-
-  for (int i = 0; i < strlen(chaine); i++) {
-    lettre = chaine[i];
-    nombre = nombre + lettre * puissance(26, i);
-  }
-  return nombre;
-}
-
-void ajouter(liste_t *Liste, char *info) {
-  cellule_t *cel;
-  cel = (cellule_t *)malloc(sizeof(cellule_t));
-  cel->nom = (char *)malloc(sizeof(int));
-  strcpy(cel->nom, info);
-  if (Liste->tete == NULL)
-
-  {
-    cel->suivant = Liste->tete;
-    Liste->tete = cel;
-  } else {
-    cellule_t *parcours = Liste->tete;
-    while (parcours->suivant != NULL) {
-      parcours = parcours->suivant;
-    }
-    cel->suivant = parcours->suivant;
-    parcours->suivant = cel;
-  }
-}
-
-void free_liste(liste_t *Liste) {
-  cellule_t *cel = Liste->tete;
-  cellule_t *prec = Liste->tete;
-  if (Liste != NULL) {
-    if (Liste->tete != NULL) {
-      while (cel != NULL) {
-        cel = cel->suivant;
-        free(prec);
-        prec = cel;
-      }
-    }
-  }
-}
-void free_table(liste_t **Liste) {
-  // Fonction qui libère l'espace mémoir alloué pour stocker les mots des passes
-  // déjà utilisé
-
-  for (int i = 0; i < M_H; i++) {
-    free_liste(Liste[i]);
-  }
-}
-
-bool detecter(liste_t *Liste, char *mot) {
-  cellule_t *cel = Liste->tete;
-
-  while (cel != NULL) {
-    if (strcmp(cel->nom, mot) == 0) {
-      return true;
-    }
-    cel = cel->suivant;
-  }
-
-  return false;
-}
-
-void init_tableau(char *tab) {
-  if (tab == NULL) {
-    printf("probleme malloc\n");
-    exit(-1);
-  }
-  for (int i = 0; i < M; i++) {
-    tab[i] = 0;
-  }
-}
-
-void change_base_function(int number, char *tab) {
+void change_base_function(int number, char *tab)
+{
 
   int quotient = 0;
   int remainder = 0;
   int i = M - 1;
 
-  while ((number / BASE) != 0) {
+  while ((number / BASE) != 0){
     tab[i] = (number % BASE);
     number = number / BASE;
     i--;
   }
 
   tab[i] = (number % BASE);
-  for (int j = 0; j < M; j++) {
+  for (int j = 0; j < M; j++)
+  {
     tab[j] += 'a';
   }
 }
 
-void reduction_function(uint64_t hash, int columnNumber, char *tab) {
+void init_tableau(char *tab)
+{
+  if (tab == NULL){
+    printf("probleme malloc\n");
+    exit(-1);
+  }
+  for (int i = 0; i < M; i++){
+    tab[i] = 0;
+  }
+}
 
+void reduction_function(uint64_t hash, int columnNumber, char *tab)
+{
   int modulo_hash = (hash % (NB_PASS_MAX)) + columnNumber;
   init_tableau(tab);
+  tab[M] = '\0';
   change_base_function(modulo_hash, tab);
 }
 
-/*void reduction_function(uint64_t hash, int columnNumber, char *tab)
-{
-    srand(hash);
-    char c;
-    for (int i=0;i<M;i++){
-        c=(rand() + columnNumber)%26 + 'a';
-        tab[i]=c;
- }
-}*/
 
-void generate_pwd(char *pwd) {
-  for (int i = 0; i < M; i++) {
+char* research_pwd(char* pwd, FILE* fileName){
+
+  char* passXL=(char*)malloc(sizeof(char)*M);
+ char* passX0=(char*)malloc(sizeof(char)*M);
+  int numLigne = 0;
+  int j=0;
+
+
+  fscanf(fileName,"%s %s", passX0, passXL);
+  ///// problème possible
+ // printf("Lik %s %s\n", passX0, passXL);
+
+  while(!feof(fileName)){
+    if(strcmp(passXL, pwd) == 0){
+      printf("le pass XL trouve est : %s", pwd);
+      return passX0;
+    }
+    fscanf(fileName,"%s %s", passX0, passXL);
+  }
+
+  return NULL;
+
+}
+void write_in_pwd_file(char* pwd,  FILE* foundPwd){
+
+  printf("le mot de passe que je vais ecrire %s \n", pwd);
+  fprintf(foundPwd, "%s ", pwd);
+
+}
+
+char* find_antecedent(char* passX0, char* hashToCrack, int n){
+    uint64_t hash;
+    char* tab;
+    tab = (char*)malloc(sizeof(char)*255);
+    if(tab == NULL){
+      printf("pb de malloc du tableau init tableau\n");
+      exit(-1);
+    }
+    init_tableau(tab);
+
+    printf("Le pass XO utilisé %s\n", passX0);
+    hash = target_hash_function(passX0);
+
+    if( hash == strtoul(hashToCrack, NULL, 10)){
+      printf("le hash trouve : %lu et le hash a attaquer %s\n", hash, hashToCrack);
+      return passX0;
+    }
+
+    for(int i=0; i< n; i++){
+
+      reduction_function(hash, i, tab);
+      hash = target_hash_function(tab);
+
+      if( hash == strtoul(hashToCrack, NULL, 10)){
+        printf("le hash trouve : %lu et le hash a attaquer %s\n", hash, hashToCrack);
+        return tab;
+      }
+    }
+
+    return NULL;
+}
+
+void generate_pwd(char *pwd)
+{
+  for (int i = 0; i < M; i++)
+  {
     pwd[i] = rand() % 26 + 'a';
   }
 }
 
-bool insert_data(char *info, liste_t **l, int *collision) {
+void generate_chain(char *pwd){
+   uint64_t hash;
+   for (int i = 0; i < L; i++)
+   {
+     hash = target_hash_function(pwd);
+     reduction_function(hash, i, pwd);
 
-  int nbr = transf(info) % M_H;
-  if (nbr < 0) {
-    nbr = nbr + M_H;
-  }
-  if (detecter(l[nbr], info)) {
-    *(collision) = *(collision) + 1;
-    return false;
-  } else {
-    ajouter(l[nbr], info);
-  }
-  return true;
-}
+   }
+ }
 
-void get_couples(char *word, char *x0, char *xL, int *collision,
-                 liste_t **tab1) {
-  if (word == NULL) {
-    word = (char *)malloc(sizeof(char) * M);
-    generate_pwd(word);
-    while (!insert_data(word, tab1, collision)) {
-      generate_pwd(word);
-    }
-  }
-  x0[M] = '\0';
-  strcpy(x0, word);
-  for (int cpt = 1; cpt <= L; cpt++) {
-    reduction_function(target_hash_function(word), cpt - 1, word);
-  }
-  xL[M] = '\0';
-  strcpy(xL, word);
-  //    free(word);    ne pas oublier de free
-}
-void generate_chain(char *pwd) {
+void generate_chain_with_file(char *pwd){
+  FILE* fe;
   uint64_t hash;
-  for (int i = 0; i < L; i++) {
+  fe = fopen("test.txt", "aw");
+  if(fe == NULL){
+    printf("probleme d'ouverture de fichier");
+    exit(-1);
+  }
+  fprintf(fe, "%s ", pwd);
+  for (int i = 0; i < L; i++)
+  {
     hash = target_hash_function(pwd);
+    fprintf(fe, "%lu ", hash);
     reduction_function(hash, i, pwd);
+    fprintf(fe, "%s ",pwd);
   }
+  fprintf(fe,"\n\n");
+  fclose(fe);
 }
 
-void generate_table(void) {
-  char *pwd = (char *)malloc(sizeof(char) * M);
 
-  if (pwd == NULL) {
-    printf("probleme de malloc\n");
-    exit(0);
-  }
-  for (int i = 0; i < N; i++) {
-    generate_pwd(pwd);
-    // passeword exist ? chkeck it with function verify : True->existe
-    // False:doesn't exist
-    printf(" PWD(%d,0 : %s)  ||  ", i, pwd);
-    generate_chain(pwd);
-    // passeword exist ? chkeck it with function verify : True->existe
-    // False:doesn't exist
-    printf("PWD (%d,L => %s)\n", i, pwd);
-  }
-}
+void rainbow_attack(char** fileNames, FILE* fileToCrack, FILE* fileFoundPwd ){
 
-int set_rainbow(
-    FILE *f, FILE *refFile, liste_t **tab1,
-    int *collision) // is given needed ?? Or determine if file empty ?
-{
-  char couples[2][M + 1];
-  char initialWord[M + 1]; // on rajoute une case pour stocker de fin de chaine
-                           // '\0' psk on en a besoins dans le fgets
-  liste_t *tab2[M_H];
-  for (int i = 0; i < M_H; i++) {
-    liste_t *l;
-    l = (liste_t *)malloc(sizeof(liste_t));
-    initialisation(l);
-    tab2[i] = l;
+  char* hashToCrack = NULL;
+  char *reducedPasswd;
+  char *antecedent=NULL;
+  char *passX0Trouve;
+
+///////////////////////////////////////////////
+  int limite;
+  int j = L-1,  number = 0, compteur = 0;
+  size_t len = 0;
+  ssize_t read;
+  FILE* fe;
+
+  for(int i=0; i < R ; i++){
+    printf("%s\n", fileNames[i]);
+
   }
 
-  for (int nbChains = 1; nbChains <= N; nbChains++) {
-    if (refFile == NULL) {
+  while( (read = getline(&hashToCrack, &len, fileToCrack)) != -1)
+  {
 
-      get_couples(NULL, couples[0], couples[1], collision, tab1);
-      while (!insert_data(couples[1], tab2, collision)) {
-        get_couples(NULL, couples[0], couples[1], collision, tab1);
-      }
-    } else {
-      if (fgets(initialWord, M + 1, refFile) == NULL) {
-        printf("Not enough word given in file\n");
-        exit(0);
-      }
-      if (fgetc(refFile) != '\n') {
-        fprintf(stderr, "word length error\n");
-        exit(0);
-      }
-      if (!feof(f)) {
-        get_couples(initialWord, couples[0], couples[1], collision, tab1);
-        while (!insert_data(couples[1], tab2, collision)) {
-          get_couples(NULL, couples[0], couples[1], collision, tab1);
-        }
-      }
+    printf("le hash à craquer %s \n", hashToCrack);
+    reducedPasswd = (char*)malloc(sizeof(char)*M);
+    if(reducedPasswd == NULL)
+    {
+      printf("pb de malloc du tableau init tableau\n");
+      exit(-1);
     }
 
-    fprintf(f, "%s %s\n", couples[0], couples[1]);
+    init_tableau(reducedPasswd);
+    limite = 0;
+    passX0Trouve = NULL;
+
+    while ((antecedent == NULL) && (limite <= (L-1)))
+    {
+      reduction_function(strtoul(hashToCrack, NULL, 10), (L-1) - limite, reducedPasswd);
+      for(j = ((L-1) - limite) + 1 ; j <= L-1; j++)
+      {
+          reduction_function(target_hash_function(reducedPasswd),j, reducedPasswd);
+          reducedPasswd[M]='\0';
+
+      }
+      limite++;
+
+      //printf("le mot de passe a chercher parmis les pass xl %s\n", reducedPasswd);
+      //printf("NOTRE N %d\n", (L-1) - limite);
+
+      for(int i = 0; i < R; i++)
+      {
+        fe = fopen(fileNames[i], "r");
+        if(fe == NULL){
+          printf("pb d'ouverture de fichier\n");
+          exit(-1);
+        }
+        passX0Trouve = research_pwd(reducedPasswd, fe);
+
+
+        if(passX0Trouve != NULL)
+        {
+          printf("pass X0 : %s, pass Xl %s\n",passX0Trouve,reducedPasswd);
+          antecedent = find_antecedent(passX0Trouve, hashToCrack, L - 1 - limite );
+          if(antecedent !=NULL)
+          {
+            ///BIG PROBLEME ALGORITHMIQUE
+             printf("Mon frérot ! j'ai trouver un antecedent dans le fichier %s   avec : pass X0 : %s, pass Xl %s\n",fileNames[i],passX0Trouve,reducedPasswd);
+
+            printf("Hash : %s => Antecedent %s \n", hashToCrack, antecedent);
+            write_in_pwd_file(antecedent, fileFoundPwd);
+            break;
+          }
+         else if (antecedent == NULL)
+      {
+        printf("je n'ai pas trouver d'antecedent dans le fichier %s   avec : pass X0 : %s, pass Xl %s\n",fileNames[i],passX0Trouve,reducedPasswd);
+       /* printf("VIDE\n");
+        write_in_pwd_file("VIDE\n", fileFoundPwd);
+        break;*/
+      }
+        }
+        fclose(fe);
+
+      }
+    }
   }
 
-  free_table(tab2);
-  if (fclose(f) == EOF) {
-    printf("Couldn't close the file\n");
-    return 0;
-  }
-
-  return 1;
 }
+
+
+
+
 
 
 
